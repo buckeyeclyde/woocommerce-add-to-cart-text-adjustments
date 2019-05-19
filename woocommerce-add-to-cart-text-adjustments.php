@@ -36,6 +36,78 @@ if ( in_array( 'woocommerce/woocommerce.php', apply_filters( 'active_plugins', g
 	</div>
 	<?php
 	}
+	
+	// add the admin options page (Settings, Add to Cart Buttons)
+	add_action('admin_menu', 'plugin_admin_add_page');
+	function plugin_admin_add_page() {
+		// add_options_page( $page_title, $menu_title, $capability, $menu_slug, $function);
+		add_options_page('Add to Cart Buttons Page', 'Add to Cart Buttons', 'manage_options', 'plugin', 'plugin_woo_atc_buttons_options_page');
+	}
+	
+	function plugin_woo_atc_buttons_options_page() {
+		?>
+		<div>
+			<h1>Adjust WooCommerce Product Add to Cart Button Text</h1>
+			<form action="options.php" method="post">
+				<!-- Output nonce, action, and option_page fields for a settings page. -->
+				<!-- settings_fields( $option_group ) Must be called inside the form tag -->
+				<?php settings_fields('plugin_options'); ?>
+				
+				<!-- callback function to output all the sections and fields that were added to that $page -->
+				<?php do_settings_sections('plugin'); ?>
+				
+				<input name="Submit" type="submit" value="<?php esc_attr_e('Save Changes'); ?>" />
+			</form>
+		</div>
+		<?php
+	}	 
+		
+	// add the admin settings sections and fields
+	add_action('admin_init', 'plugin_admin_init');
+	function plugin_admin_init(){
+		// register_setting( $option_group, $option_name, $args = array() )
+		register_setting( 
+			'plugin_options', 
+			'plugin_options', 
+			'plugin_options_validate'
+		);
+		// add_settings_section( $id, $title, $callback, $page )
+		add_settings_section(
+			'plugin_main', 
+			'Product Add to Cart Buttons Text', 
+			'plugin_section_text', 
+			'plugin'
+		);
+		// add_settings_field( $id, $title, $callback, $page, $section, $args )
+		add_settings_field(
+			'plugin_text_string', 
+			'New Add to Cart Buttons Text:', 
+			'plugin_setting_string', 
+			'plugin', 
+			'plugin_main'
+		);
+	}
+	
+	// Description for the section
+	function plugin_section_text() {
+		echo '<p>Change the text to the product Add to Cart button.</p>';
+	}
+	
+	// Add the input field for the button text change
+	function plugin_setting_string() {
+		$options = get_option('plugin_options');
+		echo "<input id='plugin_text_string' name='plugin_options[text_string]' size='40' type='text' value='{$options["text_string"]}' />";
+	} 
+	
+	// validate our options - note: returning options
+	function plugin_options_validate($input) {
+		$options = get_option('plugin_options');
+		$options['text_string'] = trim($input['text_string']);
+		$text_string = isset($_POST['text_string']) ? sanitize_text_field($_POST['text_string']) : '';
+		// finally, strip out any html entered in the field
+		$options['text_string'] =  wp_filter_nohtml_kses($input['text_string']);
+		return $options;
+	}
 
 } else { // Checked if woocommerce is active, and if not display a warning message
 	
