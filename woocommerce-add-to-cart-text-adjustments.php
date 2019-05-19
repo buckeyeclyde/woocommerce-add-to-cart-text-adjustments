@@ -108,6 +108,21 @@ if ( in_array( 'woocommerce/woocommerce.php', apply_filters( 'active_plugins', g
 		$options['text_string'] =  wp_filter_nohtml_kses($input['text_string']);
 		return $options;
 	}
+	
+	// https://www.isitwp.com/change-default-add-to-cart-button-text-in-woocommerce/
+	// Changing Add to Cart button text to custom text in individual product pages
+	function woo_custom_cart_button_text($options) {
+		$options = get_option('plugin_options');
+		return __($options['text_string'], 'woocommerce');
+	}
+	add_filter('woocommerce_product_single_add_to_cart_text', 'woo_custom_cart_button_text');
+
+	// Changing Add to Cart button text to custom text in product archive/listing pages
+	function woo_custom_product_add_to_cart_text() {
+		$options = get_option('plugin_options');
+		return __($options['text_string'], 'woocommerce');
+	}
+	add_filter( 'woocommerce_product_add_to_cart_text', 'woo_custom_product_add_to_cart_text' );
 
 } else { // Checked if woocommerce is active, and if not display a warning message
 	
